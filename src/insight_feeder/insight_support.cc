@@ -91,10 +91,56 @@ namespace co {
         } else if (perfix == "CSI") {
             std_code = instrument + kSuffixCSI;
             market = kMarketCSI;
+        } else if (perfix == "BJ") {
+            std_code = instrument + kSuffixBJ;
+            market = kMarketBJ;
         } else {
             std_code = "";
             market = 0;
         }
+    }
+
+    int64_t Market2Std(::com::htsc::mdc::model::ESecurityIDSource source) {
+        int64_t market = 0;
+        switch (source) {
+            case XSHE:
+                market = kMarketSZ;
+                break;
+            case XSHG:
+                market = kMarketSH;
+                break;
+            case CCFX:
+                market = kMarketCFFEX;
+                break;
+            case XSGE:
+                market = kMarketSHFE;
+                break;
+            case INE:
+                market = kMarketINE;
+                break;
+            case XDCE:
+                market = kMarketDCE;
+                break;
+            case XZCE:
+                market = kMarketCZCE;
+                break;
+            case XHKG:
+                market = kMarketHK;
+                break;
+            case CSI:
+                market = kMarketCSI;
+                break;
+            case CNI:
+                market = kMarketCNI;
+                break;
+            case XBSE:
+                market = kMarketBJ;
+                break;
+            default:
+                LOG_ERROR << "not valid source: " << source;
+                break;
+        }
+        return market;
     }
 
     string Parse(const MDStock& p) {
@@ -560,10 +606,18 @@ namespace co {
     string Parse(const MDOption& p) {
         string code = p.htscsecurityid();
         string std_code;
-        int8_t market = 0;
-        TransfromCode(code, std_code, market);
-        if (std_code.empty()) {
+        int64_t market = Market2Std(p.securityidsource());
+        if (market == 0) {
             return "";
+        }
+        if (market == kMarketSZ || market == kMarketSH) {
+            std_code = p.htscsecurityid();
+        } else {
+            auto pos = code.find('.');
+            if (pos == code.npos) {
+                return "";
+            }
+            std_code = code.substr(0, pos) + string(Market2Suffix(market));
         }
         QContextPtr ctx = QServer::Instance()->GetContext(code);
         if (!ctx) {
@@ -626,11 +680,12 @@ namespace co {
     string Parse(const MDFuture& p) {
         string code = p.htscsecurityid();
         string std_code;
-        int8_t market = 0;
-        TransfromCode(code, std_code, market);
-        if (std_code.empty()) {
+        int64_t market = Market2Std(p.securityidsource());
+        auto pos = code.find('.');
+        if (pos == code.npos) {
             return "";
         }
+        std_code = code.substr(0, pos) + string(Market2Suffix(market));
         QContextPtr ctx = QServer::Instance()->GetContext(code);
         if (!ctx) {
             ctx = QServer::Instance()->NewContext(code, std_code);

@@ -31,7 +31,7 @@ namespace co {
     void InsightHandler::Run() {
         BindCPU();
         while (true) {
-            com::htsc::mdc::insight::model::HtscMarketData* out;
+            com::htsc::mdc::insight::model::MarketData* out;
             while (true) {
                 if (queue_.pop(out)) {
                     break;
@@ -40,7 +40,7 @@ namespace co {
             if (!out) {
                 continue;
             }
-            const com::htsc::mdc::insight::model::HtscMarketData& data = *out;
+            const com::htsc::mdc::insight::model::MarketData& data = *out;
             switch (data.marketdatatype()) {
                 case MD_CONSTANT:
                 {//静态信息
@@ -144,7 +144,7 @@ namespace co {
         }
     }
 
-    void InsightHandler::OnMarketData(const com::htsc::mdc::insight::model::HtscMarketData& data1) {
+    void InsightHandler::OnMarketData(const com::htsc::mdc::insight::model::MarketData& data1) {
         // 测试序列化与反序列化的保存
 //        std::string str_data;
 //        data1.SerializeToString(&str_data);
@@ -159,7 +159,7 @@ namespace co {
 //        data_vec.push_back(data2);
 //        const com::htsc::mdc::insight::model::MarketData& data = data_vec[0];
 
-        com::htsc::mdc::insight::model::HtscMarketData* item = new com::htsc::mdc::insight::model::HtscMarketData;
+        com::htsc::mdc::insight::model::MarketData* item = new com::htsc::mdc::insight::model::MarketData;
         (*item).CopyFrom(data1);
         queue_.push(item);
         return;
@@ -167,7 +167,7 @@ namespace co {
 
     void InsightHandler::OnPlaybackPayload(const PlaybackPayload& payload) {
         const MarketDataStream& stream = payload.marketdatastream();
-        google::protobuf::RepeatedPtrField<HtscMarketData>::const_iterator it
+        google::protobuf::RepeatedPtrField<com::htsc::mdc::insight::model::MarketData>::const_iterator it
             = stream.marketdatalist().marketdatas().begin();
         while (it != stream.marketdatalist().marketdatas().end()) {
             OnMarketData(*it);
@@ -183,11 +183,11 @@ namespace co {
         if (!response.issuccess()) {
             stringstream ss;
             ss << response.errorcontext().errorcode() << "-" << response.errorcontext().message();
-			LOG_ERROR << "OnQueryResponse error: " << ss.str();
+            LOG_ERROR << "OnQueryResponse error: " << ss.str();
             query_over_ = true;
         } else {
             const MarketDataStream& stream = response.marketdatastream();
-            google::protobuf::RepeatedPtrField<HtscMarketData>::const_iterator it
+            google::protobuf::RepeatedPtrField<com::htsc::mdc::insight::model::MarketData>::const_iterator it
                 = stream.marketdatalist().marketdatas().begin();
             while (it != stream.marketdatalist().marketdatas().end()) {
                 OnMarketData(*it);

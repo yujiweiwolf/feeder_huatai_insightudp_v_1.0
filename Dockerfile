@@ -1,28 +1,26 @@
 FROM ubuntu:20.04
-MAINTAINER bajizhh <bajizhh@gmail.com>
 
 # --------------------------------------------------
-# setup locale
-RUN apt-get update && apt-get install -y --force-yes --no-install-recommends locales tzdata
-RUN locale-gen en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-ENV LD_LIBRARY_PATH .:/usr/local/lib
+ENV LC_ALL=en_US.UTF-8 \
+  LANG=en_US.UTF-8 \
+  LANGUAGE=en_US.UTF-8 \
+  LD_LIBRARY_PATH=.:/usr/local/lib
+# setup locale and timezone
+RUN apt-get update && apt-get install -y --force-yes --no-install-recommends locales tzdata; \
+  locale-gen en_US.UTF-8; \
+  ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime; \
+  echo Asia/Shanghai > /etc/timezone; dpkg-reconfigure -f noninteractive tzdata; \
+  ulimit -c unlimited; echo "* - nofile 6553600" >> /etc/security/limits.conf; \
+  rm -rf /tmp/*; apt-get clean; rm -rf /var/lib/apt/lists/*;
+# --------------------------------------------------
 
-# setup Timezone
-RUN rm -rf /etc/localtime; ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-RUN echo Asia/Shanghai > /etc/timezone; dpkg-reconfigure -f noninteractive tzdata
-
-# RUN echo "* - nofile 6553600" >> /etc/security/limits.conf
-# clean
-# RUN rm -rf /tmp/*; apt-get clean; rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libgssapi-krb5-2
 
 # ==================================================
-WORKDIR /opt/huatai_insightudp_feeder/bin
-CMD ["./huatai_insightudp_feeder"]
+WORKDIR /opt/feeder_huatai_insightudp/bin
+CMD ["./feeder_huatai_insightudp"]
 
 # --------------------------------------------------
-RUN apt-get update && apt-get install -y libgssapi-krb5-2
-RUN cd /opt/huatai_insightudp_feeder; mkdir conf log data tmp
-COPY huatai_insightudp_feeder *.so* /opt/huatai_insightudp_feeder/bin/
+RUN cd /opt/feeder_huatai_insightudp; mkdir conf log data tmp
+COPY feeder_huatai_insightudp *.so* /opt/feeder_huatai_insightudp/bin/
+

@@ -14,22 +14,22 @@ using namespace std;
 using namespace co;
 namespace po = boost::program_options;
 
-const string kVersion = "v1.0.9";
+const string kVersion = "v1.0.10";
 
 int main(int argc, char* argv[]) {
     try {
         po::options_description desc("[insight_feeder] Usage");
         desc.add_options()
-			("passwd", po::value<std::string>(), "encode plain password")
+            ("passwd", po::value<std::string>(), "encode plain password")
             ("help,h", "show help message")
             ("version,v", "show version information");
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
         po::notify(vm);
-		if (vm.count("passwd")) {
-			cout << co::EncodePassword(vm["passwd"].as<std::string>()) << endl;
-			return 0;
-		} else if (vm.count("help")) {
+        if (vm.count("passwd")) {
+            cout << co::EncodePassword(vm["passwd"].as<std::string>()) << endl;
+            return 0;
+        } else if (vm.count("help")) {
             cout << desc << endl;
             return 0;
         } else if (vm.count("version")) {

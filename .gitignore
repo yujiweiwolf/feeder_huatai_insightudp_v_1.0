@@ -5,6 +5,7 @@
 !*.h
 !*.c
 !*.cc
+!*.cpp
 !*.sln
 !*.vcxproj
 !*.vcxproj.filters
@@ -13,7 +14,6 @@
 !*.yaml
 !*.md
 !*.pdf
-!*.pfx
 !*.xlsx
 !*.docx
 !*.sh
@@ -24,9 +24,9 @@
 
 !lib/**/*.dll
 !lib/**/*.lib
-!lib/**/*.so
+!lib/**/*so*
 !lib/**/*.xml
 !lib/**/*.dtd
+!lib/**/**/*
 
-build/
 cmake-build-debug/

@@ -32,7 +32,7 @@ namespace co {
         * 处理订阅后推送的实时行情数据
         * @param[in] data
         */
-        void OnMarketData(const com::htsc::mdc::insight::model::HtscMarketData& data);
+        void OnMarketData(const com::htsc::mdc::insight::model::MarketData& data);
         /**
         * 处理回测请求成功后推送的回测数据
         * @param[in] PlaybackPayload 回测数据
@@ -70,6 +70,6 @@ namespace co {
         bool query_over_ = false;
         string query_error_;
         std::shared_ptr<std::thread> thread_;
-        boost::lockfree::queue<com::htsc::mdc::insight::model::HtscMarketData*, boost::lockfree::fixed_sized<false>> queue_;
+        boost::lockfree::queue<com::htsc::mdc::insight::model::MarketData*, boost::lockfree::fixed_sized<false>> queue_;
     };
 }

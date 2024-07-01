@@ -31,5 +31,5 @@ insight:
   # 压缩配置, 行情托管用户需要禁止SDK进行数据解压缩, 互联网用户需配置
   compress_flag: 1
   # 静态信息的数据位置
-  static_dir: /home/work/sys/develop/feeder_huatai_insight/static_data
+  static_dir: /home/work/sys/develop/feeder_huatai_insight_v_1.0/static_data
 

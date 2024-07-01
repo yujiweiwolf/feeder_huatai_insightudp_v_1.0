@@ -46,11 +46,11 @@ namespace co {
         client_->RegistHandle(handler_);
         Login();
         SubQuotation();
-		LOG_INFO << "server startup successfully";
+        LOG_INFO << "server startup successfully";
         // ------------------------------------------------------------
         QServer::Instance()->Wait();
-		Stop();
-		QServer::Instance()->Stop();
+        Stop();
+        QServer::Instance()->Stop();
     };
 
     void InsightServer::Stop() {
@@ -232,11 +232,41 @@ namespace co {
             SetSubInfo(*subscribe_all, MD_TICK, BondType);
             SetSubInfo(*subscribe_all, MD_TICK, IndexType);
         }
+        // 只保留中金所的期权、期货
         if (opt->enable_future()) {
-            SetSubFuture(*subscribe_all);
+            SubscribeBySourceTypeDetail* detail = subscribe_all->add_subscribebysourcetypedetail();
+            SecuritySourceType* sub_info = new SecuritySourceType();
+            sub_info->set_securityidsource(CCFX);
+            sub_info->set_securitytype(FuturesType);
+            detail->set_allocated_securitysourcetypes(sub_info);
+            detail->add_marketdatatypes(MD_TICK);
         }
+        // 只保留上交所、深交所、中金所的期权
         if (opt->enable_option()) {
-            SetSubInfo(*subscribe_all, MD_TICK, OptionType);
+            {
+                SubscribeBySourceTypeDetail* detail = subscribe_all->add_subscribebysourcetypedetail();
+                SecuritySourceType* sub_info = new SecuritySourceType();
+                sub_info->set_securityidsource(XSHG);
+                sub_info->set_securitytype(OptionType);
+                detail->set_allocated_securitysourcetypes(sub_info);
+                detail->add_marketdatatypes(MD_TICK);
+            }
+            {
+                SubscribeBySourceTypeDetail *detail = subscribe_all->add_subscribebysourcetypedetail();
+                SecuritySourceType *sub_info = new SecuritySourceType();
+                sub_info->set_securityidsource(XSHE);
+                sub_info->set_securitytype(OptionType);
+                detail->set_allocated_securitysourcetypes(sub_info);
+                detail->add_marketdatatypes(MD_TICK);
+            }
+            {
+                SubscribeBySourceTypeDetail* detail = subscribe_all->add_subscribebysourcetypedetail();
+                SecuritySourceType* sub_info = new SecuritySourceType();
+                sub_info->set_securityidsource(CCFX);
+                sub_info->set_securitytype(OptionType);
+                detail->set_allocated_securitysourcetypes(sub_info);
+                detail->add_marketdatatypes(MD_TICK);
+            }
         }
         if (opt->enable_order()) {
             SetSubInfo(*subscribe_all, MD_ORDER, StockType);
