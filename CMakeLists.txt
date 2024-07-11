@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(feeder_huatai_insightudp_v_1.0)
+project(feeder_huatai_insightudp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")

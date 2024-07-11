@@ -368,6 +368,14 @@ namespace co {
             detail->set_allocated_securitysourcetypes(sub_info);
             detail->add_marketdatatypes(dtype);
         }
+        if (market == 0) {
+            SubscribeBySourceTypeDetail* detail = sub.add_subscribebysourcetypedetail();
+            SecuritySourceType* sub_info = new SecuritySourceType();
+            sub_info->set_securityidsource(XBSE);
+            sub_info->set_securitytype(stype);
+            detail->set_allocated_securitysourcetypes(sub_info);
+            detail->add_marketdatatypes(dtype);
+        }
 
         // CNI CSI指数需要这样订阅
         if (stype == IndexType) {
