@@ -44,60 +44,14 @@ namespace co {
 
     int8_t Status2Std(const string& _status) {
         int8_t state = kStateOK;
-        if (_status == "8") {
-            state = kStateSuspension;
-        } else if (_status == "9") {
-            state = kStateBreak;
+        if (!_status.empty()) {
+            if (_status[0] == '8') {
+                state = kStateSuspension;
+            } else if (_status[0] == '9') {
+                state = kStateBreak;
+            }
         }
         return state;
-    }
-
-    void TransfromCode(const string& code, string& std_code, int8_t& market) {
-        auto it = code.find(".");
-        if (it == code.npos) {
-            LOG_ERROR << "not valid code: " << code;
-            return;
-        }
-        string instrument = code.substr(0, it);
-        if (instrument.empty()) {
-            LOG_ERROR << "not valid code: " << code;
-            return;
-        }
-        string perfix = code.substr(it + 1);
-        if (perfix == "CF") {
-            std_code = instrument + kSuffixCFFEX;
-            market = kMarketCFFEX;
-        } else if (perfix == "SHF") {
-            std_code = instrument + kSuffixSHFE;
-            market = kMarketSHFE;
-        } else if (perfix == "INE") {
-            std_code = instrument + kSuffixINE;
-            market = kMarketINE;
-        } else if (perfix == "DCE") {
-            std_code = instrument + kSuffixDCE;
-            market = kMarketDCE;
-        } else if (perfix == "ZCE") {
-            std_code = instrument + kSuffixCZCE;
-            market = kMarketCZCE;
-        } else if (perfix == "SH") {
-            std_code = instrument + kSuffixSH;
-            market = kMarketSH;
-        } else if (perfix == "SZ") {
-            std_code = instrument + kSuffixSZ;
-            market = kMarketSZ;
-        } else if (perfix == "CNI") {
-            std_code = instrument + kSuffixCNI;
-            market = kMarketCNI;
-        } else if (perfix == "CSI") {
-            std_code = instrument + kSuffixCSI;
-            market = kMarketCSI;
-        } else if (perfix == "BJ") {
-            std_code = instrument + kSuffixBJ;
-            market = kMarketBJ;
-        } else {
-            std_code = "";
-            market = 0;
-        }
     }
 
     int64_t Market2Std(::com::htsc::mdc::model::ESecurityIDSource source) {
@@ -144,7 +98,7 @@ namespace co {
     }
 
     string Parse(const MDStock& p) {
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         QContextPtr ctx = QServer::Instance()->GetContext(code);
         if (!ctx) {
             ctx = QServer::Instance()->NewContext(code, code);
@@ -152,7 +106,7 @@ namespace co {
         co::fbs::QTickT& m = ctx->PrepareQTick();
         if (m.dtype <= 0) {
             m.dtype = kDTypeStock;
-            m.src = kSrcQTickLevel2; // ����Դ
+            m.market = Market2Std(p.securityidsource());
         }
         m.pre_close = i2f(p.preclosepx()); // ���ռ�
         m.upper_limit = i2f(p.maxpx()); // ��ͣ��
@@ -172,13 +126,7 @@ namespace co {
         m.high = i2f(p.highpx());
         m.low = i2f(p.lowpx());
         m.close = i2f(p.closepx());
-        m.avg_bid_price = i2f(p.weightedavgbuypx());
-        m.avg_ask_price = i2f(p.weightedavgsellpx());
-        // m.open_interest = 0;
-        // m.close = 0;
-        // m.settle = 0;
-        //m.new_knock_count = p->nNumTrades;
-        //m.sum_knock_count += m.new_knock_count;
+
         for (int i = 0; i < 10 && i < p.buyorderqtyqueue_size() && i < p.buypricequeue_size(); ++i) {
             int64_t price = p.buypricequeue(i);
             int64_t volume = p.buyorderqtyqueue(i);
@@ -227,7 +175,7 @@ namespace co {
     }
 
     string Parse(const MDFund& p) {
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         QContextPtr ctx = QServer::Instance()->GetContext(code);
         if (!ctx) {
             ctx = QServer::Instance()->NewContext(code, code);
@@ -235,7 +183,7 @@ namespace co {
         co::fbs::QTickT& m = ctx->PrepareQTick();
         if (m.dtype <= 0) {
             m.dtype = kDTypeStock;
-            m.src = kSrcQTickLevel2; // ����Դ
+            m.market = Market2Std(p.securityidsource());
         }
         m.pre_close = i2f(p.preclosepx()); // ���ռ�
         m.upper_limit = i2f(p.maxpx()); // ��ͣ��
@@ -255,13 +203,6 @@ namespace co {
         m.high = i2f(p.highpx());
         m.low = i2f(p.lowpx());
         m.close = i2f(p.closepx());
-        m.avg_bid_price = i2f(p.weightedavgbuypx());
-        m.avg_ask_price = i2f(p.weightedavgsellpx());
-        // m.open_interest = 0;
-        // m.close = 0;
-        // m.settle = 0;
-        //m.new_knock_count = p->nNumTrades;
-        //m.sum_knock_count += m.new_knock_count;
         for (int i = 0; i < 10 && i < p.buyorderqtyqueue_size() && i < p.buypricequeue_size(); ++i) {
             int64_t price = p.buypricequeue(i);
             int64_t volume = p.buyorderqtyqueue(i);
@@ -289,7 +230,7 @@ namespace co {
     }
 
     string Parse(const MDBond& p) {
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         QContextPtr ctx = QServer::Instance()->GetContext(code);
         if (!ctx) {
             ctx = QServer::Instance()->NewContext(code, code);
@@ -297,7 +238,7 @@ namespace co {
         co::fbs::QTickT& m = ctx->PrepareQTick();
         if (m.dtype <= 0) {
             m.dtype = kDTypeStock;
-            m.src = kSrcQTickLevel2; // ����Դ
+            m.market = Market2Std(p.securityidsource());
         }
         m.pre_close = i2f(p.preclosepx()); // ���ռ�
         m.upper_limit = i2f(p.maxpx()); // ��ͣ��
@@ -317,13 +258,6 @@ namespace co {
         m.high = i2f(p.highpx());
         m.low = i2f(p.lowpx());
         m.close = i2f(p.closepx());
-        m.avg_bid_price = i2f(p.weightedavgbuypx());
-        m.avg_ask_price = i2f(p.weightedavgsellpx());
-        // m.open_interest = 0;
-        // m.close = 0;
-        // m.settle = 0;
-        //m.new_knock_count = p->nNumTrades;
-        //m.sum_knock_count += m.new_knock_count;
         for (int i = 0; i < 10 && i < p.buyorderqtyqueue_size() && i < p.buypricequeue_size(); ++i) {
             int64_t price = p.buypricequeue(i);
             int64_t volume = p.buyorderqtyqueue(i);
@@ -351,21 +285,15 @@ namespace co {
     }
 
     string Parse(const MDIndex& p) {
-        string code = p.htscsecurityid();
-        string std_code;
-        int8_t market = 0;
-        TransfromCode(code, std_code, market);
-        if (std_code.empty()) {
-            return "";
-        }
+        const std::string& code = p.htscsecurityid();
         QContextPtr ctx = QServer::Instance()->GetContext(code);
         if (!ctx) {
-            ctx = QServer::Instance()->NewContext(code, std_code);
+            ctx = QServer::Instance()->NewContext(code, code);
         }
         co::fbs::QTickT& m = ctx->PrepareQTick();
         if (m.dtype <= 0) {
             m.dtype = kDTypeIndex;
-            m.src = kSrcQTickLevel2; // ����Դ
+            m.market = Market2Std(p.securityidsource());
         }
         m.pre_close = i2f(p.preclosepx()); // ���ռ�
         m.upper_limit = i2f(p.maxpx()); // ��ͣ��
@@ -373,9 +301,9 @@ namespace co {
         // ---------------------------------------
         int64_t date = p.exchangedate() > 0 ? p.exchangedate() : p.mddate();
         int64_t stamp = p.exchangetime() > 0 ? p.exchangetime() : p.mdtime();
-        if (stamp < 91459999) {
-            LOG_INFO << "Index " << code << ", "<< stamp;
-        }
+//        if (stamp < 91459999) {
+//            LOG_INFO << "Index " << code << ", "<< stamp;
+//        }
         auto it = pre_tick_.find(code);
         if (it == pre_tick_.end()) {
             pre_tick_.emplace(code, TickInfo(stamp, p.lastpx(), p.totalvaluetrade()));
@@ -407,11 +335,6 @@ namespace co {
         m.high = i2f(p.highpx());
         m.low = i2f(p.lowpx());
         m.close = i2f(p.closepx());
-        // m.open_interest = 0;
-        // m.close = 0;
-        // m.settle = 0;
-        //m.new_knock_count = p->nNumTrades;
-        //m.sum_knock_count += m.new_knock_count;
         int8_t status = Status2Std(p.tradingphasecode());
         m.status = status;
         string raw = ctx->FinishQTick();
@@ -423,7 +346,7 @@ namespace co {
         if (p.ordertype() >= 11 && p.ordertype() <= 15) {
             return "";
         }
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         if (code.length() != 9) {
             return "";
         }
@@ -513,7 +436,7 @@ namespace co {
     }
 
     string Parse(const MDTransaction& p) {
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         if (code.length() != 9) {
             return "";
         }
@@ -604,7 +527,7 @@ namespace co {
     }
 
     string Parse(const MDOption& p) {
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         string std_code;
         int64_t market = Market2Std(p.securityidsource());
         if (market == 0) {
@@ -626,8 +549,11 @@ namespace co {
         co::fbs::QTickT& m = ctx->PrepareQTick();
         if (m.dtype <= 0) {
             m.dtype = kDTypeOption;
-            m.src = kSrcQTickLevel2;
             m.market = market;
+        }
+        // 没有读到静态信息，直接返回
+        if (m.expire_date <= 0 || m.list_date <= 0) {
+            return "";
         }
         m.pre_close = i2f(p.preclosepx());
         m.pre_settle = i2f(p.presettleprice());
@@ -678,7 +604,7 @@ namespace co {
     }
 
     string Parse(const MDFuture& p) {
-        string code = p.htscsecurityid();
+        const std::string& code = p.htscsecurityid();
         string std_code;
         int64_t market = Market2Std(p.securityidsource());
         auto pos = code.find('.');
@@ -693,12 +619,11 @@ namespace co {
         co::fbs::QTickT& m = ctx->PrepareQTick();
         if (m.dtype <= 0) {
             m.dtype = kDTypeFuture;
-            if (market == kMarketCFFEX) {
-                m.src = kSrcQTickLevel2;
-            } else {
-                m.src = kSrcQTickLevel1;
-            }
             m.market = market;
+        }
+        // 没有读到静态信息，直接返回
+        if (m.expire_date <= 0 || m.list_date <= 0) {
+            return "";
         }
         m.pre_close = i2f(p.preclosepx());
         m.pre_settle = i2f(p.presettleprice());

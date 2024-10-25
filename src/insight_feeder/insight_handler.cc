@@ -1,5 +1,5 @@
 #include "insight_handler.h"
-#include "cpu_manager.h"
+#include "config.h"
 
 namespace co {
     InsightHandler::InsightHandler() : queue_(60000) {
@@ -29,7 +29,11 @@ namespace co {
     }
 
     void InsightHandler::Run() {
-        BindCPU();
+        int cpu_affinity = Config::Instance()->cpu_affinity();
+        if (cpu_affinity) {
+            x::SetCPUAffinity(cpu_affinity);
+            __info << "SetCPUAffinity: " << cpu_affinity;
+        }
         while (true) {
             com::htsc::mdc::insight::model::MarketData* out;
             while (true) {

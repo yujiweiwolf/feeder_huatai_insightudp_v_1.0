@@ -6,7 +6,9 @@ sudo sysctl net.core.rmem_max=10485760
 sudo sysctl net.core.wmem_max=10485760
 
 * 订阅行情时必须要交易所的选项SecurityIdSource， tcp版本可以不填
-* 此程序不可能docker运行，只能在root帐号下启动
+
+# v1.0.11 (2024-10-18)
+* 优化解析
 
 # v1.0.10 (2024-07-01)
 * 升级libfeeder支持逐笔数据的Pub功能

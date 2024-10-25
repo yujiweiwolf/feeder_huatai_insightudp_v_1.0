@@ -47,22 +47,25 @@ namespace co {
         inline int market() {
             return market_;
         }
+        inline int cpu_affinity() {
+            return cpu_affinity_;
+        }
         inline QOptionsPtr opt() {
-			return opt_;
-		}
+            return opt_;
+        }
 
     protected:
-		Config() = default;
-		~Config() = default;
-		Config(const Config&) = delete;
-		const Config& operator=(const Config&) = delete;
+        Config() = default;
+        ~Config() = default;
+        Config(const Config&) = delete;
+        const Config& operator=(const Config&) = delete;
 
         void Init();
 
     private:
         static Config* instance_;
 
-		QOptionsPtr opt_;
+        QOptionsPtr opt_;
 
         string server_host_;
         int server_port_ = 0;
@@ -75,5 +78,6 @@ namespace co {
         string interface_ip_;
         int market_ = 0;
         string static_dir_;
+        int cpu_affinity_;
     };
 }

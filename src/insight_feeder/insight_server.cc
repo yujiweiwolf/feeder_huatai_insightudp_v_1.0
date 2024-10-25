@@ -88,39 +88,14 @@ namespace co {
     void InsightServer::QueryContracts() {
         // 查询静态信息
         string static_dir = Config::Instance()->static_dir();
-        if (!std::filesystem::exists(static_dir)) {
-            __info << "dir not exit, " << static_dir;
-            return;
-        }
-        string file;
-        {
-            vector<string> filenames;
-            // huatai_static_data_20221111.csv
-            const std::regex re(R"(^huatai_static_data_(\d{8}).csv)");
-            for (const fs::directory_entry& p : fs::directory_iterator(static_dir)) {
-                string filename = p.path().string();
-                __info << filename;
-                string basename = p.path().filename().string();
-                std::smatch m;
-                bool ok = std::regex_match(basename, m, re);
-                if (ok) {
-                    filenames.push_back(filename);
-                }
-            }
-            std::sort(filenames.begin(), filenames.end(), std::greater<string>());
-            if (!filenames.empty()) {
-                file = filenames.front();
-                __info << "read static file: " << file;
-            } else {
-                __info << static_dir << " is empty dir";
-                return;
-            }
-        }
-        std::fstream infile;
+        string file = static_dir + "/huatai_static_data_" + std::to_string(x::RawDate()) + ".csv";
+        __info << "read static file: " << file;
+        std::ifstream infile;
         infile.open(file, std::ios::in);
         if (!infile.is_open()) {
-            std::cout << "open file " << file << " failed! " << std::endl;
-            return;
+            __error << "open file failed! exit";
+            x::Sleep(1000);
+            exit(-1);
         }
         std::vector<std::string> data;
         std::string s;
@@ -134,7 +109,7 @@ namespace co {
                 string& line = it;
                 std::vector<std::string> fields;
                 x::Split(&fields, line, ",");
-                if (fields.size() == 22) {
+                if (fields.size() >= 22) {
                     int i = 0;
 //                    LOG_INFO << "HTSCSecurityID: " << fields[i++]
 //                             << ", Symbol: " << fields[i++]
@@ -157,6 +132,7 @@ namespace co {
 //                             << ", ExpireDate: " << fields[i++]
 //                             << ", StartDelivDate: " << fields[i++]
 //                             << ", EndDelivDate: " << fields[i++];
+                    int securityidsource = atoi(fields[2].c_str());
                     int securitytype = atoi(fields[3].c_str());
                     double ticksize = atof(fields[5].c_str());
                     double optionticksize = atof(fields[10].c_str());
@@ -168,8 +144,11 @@ namespace co {
                     }
                     string code = x::Trim(fields[0].c_str());
                     string std_code;
-                    int8_t market = 0;
-                    TransfromCode(code, std_code, market); // 上海、深圳、CSI、CNI，code = std_code
+                    int8_t market = Market2Std((::com::htsc::mdc::model::ESecurityIDSource)securityidsource);
+                    if (auto it = code.find("."); it != code.npos) {
+                        string instrument = code.substr(0, it);
+                        std_code = instrument + co::Market2Suffix(market);
+                    }
                     if (std_code.length() > 0) {
                         QContextPtr ctx = QServer::Instance()->GetContext(code);
                         if (!ctx) {
@@ -177,6 +156,7 @@ namespace co {
                             ctx = QServer::Instance()->NewContext(code, std_code);
                             co::fbs::QTickT &tick = ctx->tick();
                             tick.name = name;
+                            tick.market = market;
                             if (securitytype == ESecurityType::OptionType ||
                                 securitytype == ESecurityType::FuturesType) {
                                 if (securitytype == ESecurityType::FuturesType) {

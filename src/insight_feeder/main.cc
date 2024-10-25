@@ -14,7 +14,7 @@ using namespace std;
 using namespace co;
 namespace po = boost::program_options;
 
-const string kVersion = "v1.0.10";
+const string kVersion = "v1.0.11";
 
 int main(int argc, char* argv[]) {
     try {

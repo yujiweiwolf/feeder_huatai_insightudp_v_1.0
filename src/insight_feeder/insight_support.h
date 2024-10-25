@@ -34,7 +34,6 @@ namespace co {
     int8_t BsFlag2Std(const int32_t& _bs_flag);
     int8_t OrderType2Std(const int32_t& _order_type);
     int8_t Status2Std(const string& _status);
-    void TransfromCode(const string& code, string& std_code, int8_t& market);
     int64_t Market2Std(::com::htsc::mdc::model::ESecurityIDSource source);
 
     string Parse(const MDStock& p);
