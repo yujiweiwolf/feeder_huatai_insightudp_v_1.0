@@ -58,7 +58,6 @@ namespace co {
             interface_ip_ = getStr(insight_feeder,"interface_ip");
             market_ = getInt(insight_feeder, "market");
             static_dir_ = getStr(insight_feeder,"static_dir");
-            cpu_affinity_ = getInt(insight_feeder, "cpu_affinity");
             stringstream ss;
             ss << "+-------------------- configuration begin --------------------+" << endl;
             ss << opt_->ToString() << endl;
@@ -75,7 +74,6 @@ namespace co {
                << "  compress_flag: " << compress_flag_ << endl
                << "  market: " << market_ << endl
                << "  static_dir: " << static_dir_ << endl
-               << "  cpu_affinity: " << cpu_affinity_ << endl
                << "+-------------------- configuration end   --------------------+";
             LOG_INFO << endl << ss.str();
         } catch (std::exception& e) {

@@ -47,9 +47,6 @@ namespace co {
         inline int market() {
             return market_;
         }
-        inline int cpu_affinity() {
-            return cpu_affinity_;
-        }
         inline QOptionsPtr opt() {
             return opt_;
         }
@@ -78,6 +75,5 @@ namespace co {
         string interface_ip_;
         int market_ = 0;
         string static_dir_;
-        int cpu_affinity_;
     };
 }
